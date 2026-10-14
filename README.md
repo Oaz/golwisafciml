@@ -31,8 +31,8 @@ Inside a version folder, there are two possible layouts:
 ```
 <language>/
 └── classic/
-    ├── core/              # shared functional core (same code in every environment)
-    ├── DesktopNativeGUI/  # one folder per environment program, each depends on core
+    ├── core/        # shared functional core (same code in every environment)
+    ├── DesktopGUI/  # one folder per environment program, each depends on core
     └── WebSPA/
 ```
 
@@ -40,7 +40,7 @@ Inside a version folder, there are two possible layouts:
 
 Environments are named after the technical context of the program, not the technology used (e.g. the same environment name may be implemented with different frameworks in different languages). Possible environments include (the list is not exhaustive):
 
-- `DesktopNativeGUI` — native desktop application with a graphical interface
+- `DesktopGUI` — native desktop application with a graphical interface
 - `WebSPA` — browser-based single-page application
 - `WebServerOnly` — server-side program (renders/serves over the web, no client logic)
 - `Mobile` — mobile application

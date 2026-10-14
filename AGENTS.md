@@ -1,135 +1,120 @@
-# AGENTS.md — Mandatory Workflow: Plan First, Then Implement
+# AGENTS.md — Mandatory Workflow: Prerequisites → Plan → Implement
 
-> **This file applies to every AI agent working in this repository. Read it before
-> doing anything else. It overrides any default behavior that would have you
-> start implementing immediately.**
+> This file applies to every AI agent working in this repository. Read it first.
+> It overrides any default behavior that would have you start planning or
+> implementing immediately.
 
 ## Golden rule
 
-**Never create, modify, or delete any project file before a written plan has
-been reviewed and explicitly approved by the human owner.**
-
-"Project file" means any file other than the plan itself. Showing code snippets
-inside the plan document is fine; creating source files, test files, build
-files, or scaffolding is not.
+**Never plan while prerequisites are unknown. Never create, modify, or delete
+any project file before a written plan is explicitly approved by the human
+owner.** "Project file" means any file other than the plan itself.
 
 ## Why
 
-- Planning is an **iterative** process: the plan will go through multiple
-  refinements with the human before it is considered complete.
-- Implementation is expected to go in a **single pass** — one human prompt —
-  once planning is complete. That is only achievable if the plan is precise
-  and validated.
-- Starting to implement before the plan is approved wastes work, locks in
-  wrong decisions, and defeats the review step.
+- A plan built on guesses (undecided libraries, tooling, specs) is invalidated
+  the moment those decisions arrive. Planning on unknowns is wasted work.
+- Planning is iterative; implementation is a single pass. Both require known
+  inputs and a validated plan.
 
-## The workflow — two phases, a hard gate between them
+## Workflow — three phases, hard gates between them
 
-### Phase 1 — PLAN (no project files may be written)
+### Phase 0 — PREREQUISITES (no planning, no files)
 
-1. **Read the context first**. Documentation is hierarchical: a `README.md`
-   exists at several levels of the repo (repo root, each language folder, each
-   environment folder). When the task happens in folder `a/b/c`, you **must**
-   read every `README.md` in the folder hierarchy — `README.md` (repo root),
-   `a/README.md`, `a/b/README.md`, `a/b/c/README.md` — plus `specs.md` at the
-   repo root, before proposing anything. Inner READMEs add local constraints
-   (build tooling, layout, how the core is referenced); they all apply
-   cumulatively. Re-read the relevant sections of the spec (architecture,
-   domain model, instruction protocol, test suite) for the task at hand.
-2. **Produce a written plan** covering at least:
-   - scope of the requested task (what is in, what is deliberately out);
-   - file/module layout and naming;
-   - for each file: its responsibility and a sketch of its public API /
-     key types and functions (signatures, not full bodies);
+Check these before writing anything, including the plan:
+
+1. Read `specs.md` plus every `README.md` that exists along the path to the
+   task folder (READMEs in not-yet-existing folders are naturally absent).
+   Inner READMEs add local constraints; they all apply cumulatively.
+2. **External dependencies decided**: any third-party library (and version),
+   external service/API, build tooling, runtime, or protocol format coming
+   from outside this repo must already be chosen by the human. "Some JSON
+   library, TBD" is not decided.
+
+If a prerequisite is missing: **ask, don't plan.** Do not write a plan, a
+draft plan, or assumption-based variants. Instead ask **semi-open questions**:
+one question per unknown, concrete numbered options, an escape hatch
+"(N) Something else — please describe", and a recommendation if you have one.
+Do not assume a default for an undecided dependency. Once the human answers,
+record the decisions in the plan and proceed to Phase 1.
+
+### Phase 1 — PLAN (only the plan file may be written)
+
+1. Read every `README.md` in the folder hierarchy plus `specs.md`. Inner
+   READMEs add local constraints; they all apply cumulatively. Re-read the
+   relevant spec sections for the task.
+2. Write the plan as `a/b/c/plan.md` (where the task happens) covering at least:
+   - scope (in / deliberately out);
+   - **Decisions**: the Phase 0 prerequisite decisions (dependencies, versions,
+     tooling), so the plan is self-contained;
+   - file/module layout and naming, each file's responsibility and a sketch of
+     its public API (signatures, not bodies);
    - how the spec's invariants are honored (pure core, instruction protocol,
-     test groups affected);
-   - the language-idiomatic choices made (build tooling, how environments will
-     reference the core, data structures, memoization idiom);
+     affected test groups);
    - the test plan mapped to the spec's test groups (§11);
    - open questions for the human.
-3. **Submit the plan for review.** Ask explicitly: "Review this plan before I
-   write any code."
-4. **Iterate.** Apply feedback and resubmit. Repeat until the human says the
-   plan is approved. Do not silently "improve" the plan during implementation.
-5. **Never jump to Phase 2 on your own initiative**, even if the plan seems
-   obvious, even if the task looks small, even if feedback is slow. Wait for
-   an explicit approval such as "plan approved" / "go ahead".
+3. Submit for review: "Review this plan before I write any code."
+4. Iterate on feedback until explicit approval. Keep revisions visible in the
+   plan file.
+
+Never jump to Phase 2 on your own initiative, however obvious or small the
+task seems.
 
 ### Phase 2 — IMPLEMENT (only after explicit approval)
 
-"Single pass" means **one human prompt**: after approval, the agent completes
-the whole implementation without coming back for further authorization. It
-does **not** mean writing all code in one shot — the agent **should iterate on
-unit tests** (write a test, make it pass, write the next test, make all tests
-pass, refactor as needed). Test-driven iteration inside the approved plan is
-the expected way of working.
+"Single pass" means one human prompt; the agent completes the whole
+implementation without returning for authorization. It does **not** mean
+writing everything in one shot — iterate test-first (write a test, make it
+pass, repeat; refactor as needed; keep the suite green).
 
-1. Implement exactly the approved plan. If you discover that the plan is
-   wrong or incomplete, **stop, report the issue, and request a plan
-   amendment** — do not improvise structural changes.
+1. Implement exactly the approved plan. If the plan turns out wrong or
+   incomplete, **stop and request a plan amendment** — do not improvise
+   structural changes.
 2. Create only the files and tests the plan describes.
-3. Iterate test-first: write a test, make it pass, write another test, make
-   all tests pass. Keep the suite green at each step of the iteration.
-4. Run the full test suite and report results honestly (all green, or the
-   exact failures).
-5. End with a summary of what was created, deviations (if any were approved
-   along the way), and how to build/run/test.
+3. Run the full test suite; report results honestly.
+4. End with a summary of what was created, approved deviations (if any), and
+   how to build/run/test.
 
 ## Hard rules (always in force)
 
-- **No scaffolding, no "getting started" files** before approval. That
-  includes: `dotnet new`, `cargo init`, package manifests, empty folders of
-  source files, placeholder classes.
-- **No speculative work**: do not implement parts of `specs.md` that were not
-  requested in the current task (e.g. do not start v2 or environment shells
-  when asked for `fsharp/classic/core` only).
-- **The plan is stored where the task happens.** If the task is to implement
-  `a/b/c`, the plan is `a/b/c/plan.md`. If `a/b/c` does not exist yet, create
-  only the plan file there (this is the sole permitted file write in Phase 1).
-  The plan is the only file you may write during Phase 1. Keep previous
-  versions or clearly mark revisions so refinement history is visible.
-- If in doubt about scope, ask. A clarifying question is always cheaper
-  than an unapproved implementation.
-- **If you (the agent) notice yourself about to create a file while no
-  approved plan exists: stop and return to Phase 1.**
+- **No planning while a prerequisite is unknown**; ask instead.
+- **No scaffolding before approval** (`dotnet new`, `cargo init`, manifests,
+  placeholder files).
+- **No speculative work**: implement only what the current task requests.
+- **The plan is the only file you may write in Phase 1**, stored where the
+  task happens (`a/b/c/plan.md`).
+- If in doubt about scope, ask.
+- About to plan with an unknown prerequisite? Stop, return to Phase 0.
+- About to create a file with no approved plan? Stop, return to Phase 1.
 
-## What an approval looks like
+## Approval semantics
 
-Only a clear, explicit human statement counts as approval, for example:
-"Plan approved", "Go ahead", "Implement phase 2". Absence of objection,
-silence, or "looks good so far" during iteration is **not** approval.
+Only an explicit statement counts as approval: "Plan approved", "Go ahead",
+"Implement phase 2". Silence, absence of objection, or "looks good so far"
+is **not** approval.
+
+Likewise, a Phase 0 decision ("use library X version Y") is a prerequisite
+decision, **not** plan approval. Plan approval is a separate, explicit
+statement given after the plan is reviewed.
 
 ## Right to refuse — clarity before code
 
-**The agent must refuse to implement while the plan still contains unclear
-points.** Do not treat approval as pressure to fill gaps by guessing: an
-ambiguous plan cannot produce a correct single-pass implementation.
-
-- Any unresolved ambiguity in the plan (an open question left unanswered, a
-  requirement that can be read two ways, a missing decision on layout,
-  naming, tooling, or test scope) is a **blocker**, not an implementation
-  detail to resolve silently.
-- In that case the agent **asks for clarification before writing any code**,
-  even after the plan has been approved. The human answers, the plan is
-  amended, and only then does implementation start.
-- **Ask semi-open questions**, not open-ended ones. For each unclear point,
-  propose **concrete numbered options** plus an escape hatch, e.g.:
-
-  > This point is unclear: should the persistent map live in
-  > (1) a dedicated `Map` module in the core, or
-  > (2) the neighbor-counting module only?
-  > (3) Something else — please describe.
-
-  One question per point, options that are genuinely distinct, and a
-  recommendation if the agent has one. Do not bundle several ambiguities
-  into one vague question, and do not ask questions whose answers are
-  already in the READMEs or the spec.
-- If the ambiguity is discovered **during** implementation, stop immediately,
-  ask the semi-open question, and resume only after the answer is
-  incorporated into the plan.
+- **Before planning**: an undecided external dependency or a missing/
+  contradicted spec is a **blocker**. Ask a semi-open question (numbered
+  options + escape hatch + recommendation). Do not write any part of a plan.
+- **Before implementing**: any unresolved ambiguity in the plan (open
+  question, two-way reading, missing naming/layout/tooling/test decision) is a
+  **blocker**. Ask before writing any code, even after approval. Amend the
+  plan with the answer, then implement.
+- Ambiguity discovered **during** implementation: stop immediately, ask,
+  resume only after the answer is in the plan.
+- Ask semi-open questions only: one per point, genuinely distinct options,
+  never questions already answered in the READMEs or spec.
 
 ---
 
-**Summary: Read every README in the folder hierarchy + the spec → write the
-plan where the task happens → human review → refine → repeat → explicit
-approval → single-prompt, test-driven implementation. No file before approval.**
+**Summary: prerequisites known (specs + decided dependencies) → read READMEs
++ spec → plan where the task happens → review → refine → explicit approval →
+single-prompt, test-driven implementation. No planning on unknowns; no file
+before approval.**
+
