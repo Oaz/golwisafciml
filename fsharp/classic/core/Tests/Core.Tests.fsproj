@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <OutputType>Exe</OutputType>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Expecto" Version="11.1.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Core.fsproj" />
+    <Compile Include="CoreTests.fs" />
+    <Compile Include="ProgramTests.fs" />
+    <Compile Include="PropertyTests.fs" />
+    <Compile Include="TestEntryPoint.fs" />
+  </ItemGroup>
+
+</Project>
