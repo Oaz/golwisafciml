@@ -122,6 +122,8 @@ Core (v2) = {
 - Pure field-update constructors returning **new** immutable cores: `withCells`, `withStatusVisible`, and (v2) `withCurrentPattern`.
 - Pure observers: `cellsOf`, `statusVisibleOf`, and (v2) `currentPatternOf`.
 
+**Division of responsibility for patterns (normative).** The pattern *repository* — storage, persistence, authoring, and enumeration — is managed by the **shell**, behind the `PatternStore` port; the core never stores, persists, or enumerates patterns. The core's (v2) role is limited to remembering the **name** of the currently selected pattern (`currentPattern`): whenever the core needs the actual cells of a pattern, it emits `GetPatternCells(name)` and receives the cells as that instruction's response. The core holds pattern *selection*, never pattern *data*.
+
 **Ordering policy (normative).** `Cells` is treated as a **set with order-insensitive equality** everywhere in this spec and its test suite. Implementations may use any internal ordering provided all equality assertions are order-insensitive and the per-implementation order is stable between equal inputs (G9, I7).
 
 ### 2.3 Life rules (invariant across versions)
@@ -313,6 +315,7 @@ Notes:
 
 - **v2 sentinel `"current"`**: the core resolves it to the stored **name** of the currently selected pattern *at program-construction time*, then emits `GetPatternCells` with that name — the store **is** consulted (test I5). If `currentPatternOf(core)` is `""`, the store reports an empty pattern and the world is unchanged.
 - The resolution of `"current"` is a **core decision**; the shell never resolves names.
+- The store is shell-managed: the core never reads storage directly — `GetPatternCells` is its only window on the repository, consulted each time pattern cells are needed (at program-run time, with the resolved name).
 - Unknown pattern name → the store reports empty `Cells`; `addPattern` then simply re-shows the unchanged cells and returns an unchanged-content core. **This must not crash** (test I9). The core is total; the shell decides what a missing pattern means to the user (ignore, log, message).
 
 **`switchStatusVisibilityProgram(core)`** (both versions)
@@ -447,6 +450,7 @@ The store persists named patterns. The **format is the implementation's choice**
 - pattern names are enumerable in **ascending order** (test P5);
 - a corrupt or missing entry loads as an **empty pattern** (absent key → empty cells list; test P5);
 - the format is documented in the port's README.
+- the store is a shell-owned port: the core never touches storage; it only requests cells by name through the `GetPatternCells` instruction.
 
 ---
 
