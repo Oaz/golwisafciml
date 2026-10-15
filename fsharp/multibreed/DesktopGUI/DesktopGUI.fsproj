@@ -7,8 +7,8 @@
 
   <ItemGroup>
     <ProjectReference Include="..\core\Core.fsproj" />
-    <PackageReference Include="DIKU.Canvas" Version="2.0.0" />
-    <PackageReference Include="LiteDB" Version="5.0.10" />
+    <PackageReference Include="DIKU.Canvas" Version="2.0.4" />
+    <PackageReference Include="LiteDB" Version="5.0.21" />
   </ItemGroup>
 
   <ItemGroup>
