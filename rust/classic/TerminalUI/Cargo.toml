@@ -1,0 +1,20 @@
+[package]
+name = "gol-classic-terminalui"
+version = "0.1.0"
+edition = "2021"
+description = "Terminal UI shell for Conway's Game of Life (v1) - Classic Monochrome"
+license = "AGPL-3.0"
+
+[[bin]]
+name = "gol-classic-terminalui"
+path = "src/main.rs"
+
+[dependencies]
+gol-classic-core = { path = "../core" }
+ratatui = "0.28"
+rusqlite = { version = "0.31", features = ["bundled"] }
+crossterm = "0.28"
+anyhow = "1.0"
+
+[dev-dependencies]
+tempfile = "3.0"
