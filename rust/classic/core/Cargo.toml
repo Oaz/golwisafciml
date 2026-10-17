@@ -1,0 +1,12 @@
+[package]
+name = "gol-classic-core"
+version = "0.1.0"
+edition = "2021"
+description = "Functional core for Conway's Game of Life (v1) - Classic Monochrome"
+license = "AGPL-3.0"
+
+[lib]
+crate-type = ["lib"]
+
+[dependencies]
+# Zero dependencies - std only
