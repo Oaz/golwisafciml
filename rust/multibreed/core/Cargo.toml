@@ -1,0 +1,12 @@
+[package]
+name = "gol-multibreed-core"
+version = "0.1.0"
+edition = "2021"
+description = "Functional core for Conway's Game of Life (v2) - Multi-Breed"
+license = "AGPL-3.0"
+
+[lib]
+crate-type = ["lib"]
+
+[dependencies]
+im = "15.1"
