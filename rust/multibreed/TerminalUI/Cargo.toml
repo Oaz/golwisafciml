@@ -1,0 +1,21 @@
+[package]
+name = "gol-multibreed-terminalui"
+version = "0.1.0"
+edition = "2021"
+description = "Terminal UI shell for Conway's Game of Life (v2) - Multi-Breed"
+license = "AGPL-3.0"
+
+[[bin]]
+name = "gol-multibreed-terminalui"
+path = "src/main.rs"
+
+[dependencies]
+gol-multibreed-core = { path = "../core" }
+ratatui = "0.28"
+rusqlite = { version = "0.31", features = ["bundled"] }
+crossterm = "0.28"
+anyhow = "1.0"
+im = "15.1"
+
+[dev-dependencies]
+tempfile = "3.0"

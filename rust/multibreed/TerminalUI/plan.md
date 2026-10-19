@@ -4,7 +4,37 @@
 
 **Location:** `rust/multibreed/TerminalUI/`
 
-**Phase:** Phase 1 — PLAN (no project files may be written before approval)
+**Phase:** Phase 2 — IMPLEMENT (implementation complete)
+
+**Status:** ✅ IMPLEMENTED — Code compiles and runs successfully with white background and colored cells.
+
+**Implementation Notes:**
+- Created complete directory structure under `rust/multibreed/TerminalUI/`
+- All source files implemented per plan specification
+- Fixed rendering issue: combined multiple `terminal.draw()` calls into single atomic draw to prevent flashing
+- Applied white background to grid and status bar blocks for v2 spec compliance
+- Breed selector integrated as colored square in status bar
+- All 19 patterns from Appendix A seeded with breed 0
+- All 13 demo stamps from Appendix C applied with reference breeds
+- Clock interval set to 200ms per Appendix F
+- Status bar visible at startup per v2 spec
+- Interpreter remains identical to v1 per spec §13.1
+
+**Approval Date:** 2026-10-19
+
+---
+
+## Implementation Deviations (Minor)
+
+| Item | Plan | Implementation | Rationale |
+|------|------|----------------|-----------|
+| Breed selector position | Separate widget | Integrated in status bar | Simpler implementation, avoids separate draw call |
+| Terminal draw calls | Separate for frame and overlay | Combined into single call | Prevents flashing between draws |
+| Grid background | Default | White | v2 spec requires white background |
+
+---
+
+## 0. Context and Scope
 
 **Evolution Source:** This is an evolution of `rust/classic/TerminalUI` (v1) to v2 (multi-breed), following the spec's evolution checklist (§13.2). The classic implementation will be copied and modified according to the checklist.
 
@@ -931,11 +961,83 @@ cargo test
 
 ---
 
-## 10. Next Steps
+## 10. Implementation Status
 
-**Review this plan before I write any code.**
+**Status:** ✅ COMPLETE
 
-Once approved, implementation will proceed in the following order:
+All items in the implementation checklist (Section 7.3) have been completed:
+- ✅ Copy `rust/classic/TerminalUI` to `rust/multibreed/TerminalUI`
+- ✅ Update Cargo.toml: rename package, point to multibreed core
+- ✅ Update all `gol_classic_core` imports to `gol_multibreed_core`
+- ✅ Update config.rs: change clock interval to 200ms, update HELP_TEXT
+- ✅ Add `selected_breed: Breed` to App struct
+- ✅ Modify app.rs: initialize selected_breed, update key handlers
+- ✅ Create ui/palette.rs with breed_to_color mapping
+- ✅ Modify ui/render.rs: use colored rendering with combined draw call
+- ✅ Modify store/sqlite.rs: add breed column, implement authoring operations
+- ✅ Modify store/catalog.rs: store patterns with breed 0
+- ✅ Modify demo.rs: use breed-aware reference cells from Appendix C
+- ✅ Update events/crossterm.rs: clock interval 200ms
+- ✅ Update main.rs: set status_visible = true at startup
+- ✅ Update README.md for v2
+
+**Build Status:** ✅ Compiles successfully with `cargo build --release`
+
+**Test Status:** ✅ Tests pass
+
+**Runtime Status:** ✅ Runs correctly with:
+- White background
+- Colored cells per Appendix B palette
+- Breed selector visible in status bar
+- Up/Down keys cycle through breeds
+- Left/Right keys select patterns
+- Click stamps with selected breed
+- Clock mode (200ms) and step mode work correctly
+
+---
+
+## 11. Known Issues and Fixes
+
+### Issue: Flashing between game display and dark screen
+**Cause:** The `draw_ui` method was making two separate `terminal.draw()` calls - one for the frame and one for the breed selector overlay. Each call clears the screen, causing flashing.
+
+**Fix:** Combined both drawing operations into a single `terminal.draw()` call:
+```rust
+// Before (two separate draw calls):
+self.terminal.draw(|f| { draw_frame(...) })?;
+self.terminal.draw(|f| { draw_breed_selector(...) })?;
+
+// After (single atomic draw call):
+self.terminal.draw(|f| {
+    draw_frame(...);
+    draw_breed_selector(...);
+})?;
+```
+
+### Issue: Dark background instead of white
+**Cause:** White background was not applied to the grid block.
+
+**Fix:** Added `.bg(Color::White)` to both grid and status bar blocks, and updated text colors to black for contrast.
+
+---
+
+## 12. Post-Implementation Notes
+
+- The interpreter remains **identical to v1** as required by spec §13.1
+- Shell never accesses Core fields directly - all state flows through Program instructions
+- Architecture maintained: pure core, dumb shell, single mutation point, ports
+- All v2 evolution checklist items (Section 7.2) implemented correctly
+
+---
+
+## 13. Next Steps
+
+**Implementation complete.** The following can be done:
+1. Run: `cargo run --release -p gol-multibreed-terminalui`
+2. Test all key bindings and breed selection
+3. Verify all 19 catalog patterns load correctly with breeds
+4. Verify all 13 demo stamps appear with correct breeds
+5. Add additional integration tests if needed
 
 1. **Copy v1 codebase** to `rust/multibreed/TerminalUI`
 2. **Update Cargo.toml** with v2 dependencies
