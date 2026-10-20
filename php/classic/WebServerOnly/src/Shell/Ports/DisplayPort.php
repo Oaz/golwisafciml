@@ -21,6 +21,12 @@ final class DisplayPort implements Port
     private int $gridWidth = 160;
     private int $gridHeight = 70;
     private int $cellSize = 10;
+    private ?PatternStorePort $patternStore = null;
+
+    public function __construct(?PatternStorePort $patternStore = null)
+    {
+        $this->patternStore = $patternStore;
+    }
 
     public function render(Cells $cells): void
     {
@@ -155,16 +161,18 @@ HTML;
         return '?' . http_build_query($params);
     }
 
+    public function setPatternStore(?PatternStorePort $patternStore): void
+    {
+        $this->patternStore = $patternStore;
+    }
+
     private function renderPatternSelector(): string
     {
-        // Pattern list - will be populated from PatternStore in RequestHandler
-        // For now, include the v1 catalog patterns
-        $patterns = [
-            'acorn', 'beacon', 'blinker', 'block', 'glider',
-            'gosperGun', 'hwss', 'lwss', 'mwss', 'pentadecathlon',
-            'pulsar', 'queenBeeShuttle', 'rabbits', 'rpentomino',
-            'spaceShip', 'toad', 'tub', 'pentominoR', 'beehive'
-        ];
+        // Get pattern list from PatternStore
+        $patterns = $this->patternStore ? $this->patternStore->list() : [];
+        
+        // Sort patterns alphabetically
+        sort($patterns);
 
         $options = '';
         foreach ($patterns as $pattern) {

@@ -181,6 +181,9 @@ final class RequestHandler
         // Save core to state
         $this->state->saveCore($core);
 
+        // Ensure display has access to pattern store
+        $this->display->setPatternStore($this->patternStore);
+
         // Configure display
         $this->display->setClocked($clocked);
         $this->display->setSelectedPattern($selectedPattern);

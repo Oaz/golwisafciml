@@ -35,7 +35,7 @@ if (session_status() === PHP_SESSION_NONE) {
 $patternStore = new PatternStorePort($config->patternsDir);
 
 // Create ports
-$displayPort = new DisplayPort();
+$displayPort = new DisplayPort($patternStore);
 $statePort = new StatePort();
 $eventSourcePort = new EventSourcePort($_GET);
 
