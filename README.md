@@ -14,6 +14,7 @@ Every implementation follows the **Imperative Shell / Functional Core** architec
 One top-level folder per programming language. The list grows over time; currently:
 
 - [`fsharp/`](fsharp/) — F#
+- [`php/`](php/) — PHP
 - [`rust/`](rust/) — Rust
 
 Inside each language folder, one folder per version of the game:
@@ -65,6 +66,7 @@ This keeps a single source of truth for the core (Linux is the only build enviro
 | TypeScript            | Workspace tooling (pnpm/yarn workspaces, `paths` in tsconfig, or a monorepo tool)                         |
 | Go                    | Go module with a `replace` directive pointing to the local core                                           |
 | Python                | Editable local install (`pip install -e`) or equivalent path-based dependency                             |
+| PHP                   | Composer path repository (`{"type": "path"}` in `composer.json`, core as a local package)                 |
 | OCaml                 | dune workspace with the core as a library                                                                 |
 | Haskell               | Cabal multi-package project with relative-path packages                                                   |
 | C / C++               | CMake `add_subdirectory(core)` or a static library target                                                 |
