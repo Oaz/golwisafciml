@@ -56,6 +56,11 @@ final class RequestHandler
         $clocked = $this->state->isClocked();
         $selectedPattern = $this->state->getSelectedPattern();
 
+        // If clocked parameter is in GET, use it (preserves clocked state across form submissions)
+        if ($this->eventSource->isClocked()) {
+            $clocked = true;
+        }
+
         // 2. Seed demo scene on first request
         if ($this->state->isFirstRequest()) {
             $core = $this->seedDemoScene($core);
@@ -84,6 +89,11 @@ final class RequestHandler
         } elseif ($action === 'clock_off') {
             $this->state->setClocked(false);
             $clocked = false;
+        } elseif ($action === 'reset') {
+            $core = Core::initial();
+            $core = $this->seedDemoScene($core);
+            $this->state->saveCore($core);
+            return $this->renderFinalState($core, $clocked, $selectedPattern);
         }
 
         // 6. Build and interpret program based on action
@@ -121,6 +131,8 @@ final class RequestHandler
     private function seedDemoScene(Core $core): Core
     {
         // The 13 stamps from Appendix C
+        // Translation: subtract 26 from x, subtract 22 from y
+        // This moves center from (26,22) to (0,0)
         $stamps = [
             ['pattern' => 'hwss', 'x' => 33, 'y' => 20],
             ['pattern' => 'rpentomino', 'x' => 35, 'y' => 10],
@@ -142,7 +154,11 @@ final class RequestHandler
             if ($patternCells->count() === 0) {
                 continue;
             }
-            $reference = new Position($stamp['x'], $stamp['y']);
+            // Translate the reference point: subtract 26 from x, subtract 22 from y
+            $reference = new Position(
+                $stamp['x'] - 26,
+                $stamp['y'] - 22
+            );
             $translated = Pattern::translate($patternCells, $reference);
             $core = $core->withCells($core->cellsOf()->union($translated));
         }

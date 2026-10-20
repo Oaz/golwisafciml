@@ -18,8 +18,9 @@ final class DisplayPort implements Port
     private bool $statusVisible = false;
     private bool $clocked = false;
     private string $selectedPattern = 'blinker';
-    private int $cellSize = 20;
-    private int $padding = 10;
+    private int $gridWidth = 160;
+    private int $gridHeight = 70;
+    private int $cellSize = 10;
 
     public function render(Cells $cells): void
     {
@@ -60,7 +61,7 @@ final class DisplayPort implements Port
             : '';
 
         $metaRefresh = $this->clocked
-            ? '<meta http-equiv="refresh" content="0.1">'
+            ? '<meta http-equiv="refresh" content="0.5">'
             : '';
 
         $patternSelector = $this->renderPatternSelector();
@@ -100,27 +101,19 @@ HTML;
 
     private function renderGrid(): string
     {
-        // Calculate grid bounds with padding
-        $bounds = $this->calculateBounds($this->cells, $this->padding);
-        $minX = $bounds['minX'];
-        $maxX = $bounds['maxX'];
-        $minY = $bounds['minY'];
-        $maxY = $bounds['maxY'];
+        // Fixed viewport: always show x from -80 to 79, y from -35 to 34
+        $startX = -80;
+        $startY = -35;
+        $endX = 79;
+        $endY = 34;
 
-        $gridWidth = $maxX - $minX + 1;
+        $html = '<div class="grid" style="grid-template-columns: repeat(' . $this->gridWidth . ', ' . $this->cellSize . 'px);">';
 
-        $html = '<div class="grid" style="grid-template-columns: repeat(' . $gridWidth . ', ' . $this->cellSize . 'px);">';
-
-        for ($y = $minY; $y <= $maxY; $y++) {
-            for ($x = $minX; $x <= $maxX; $x++) {
+        for ($y = $startY; $y <= $endY; $y++) {
+            for ($x = $startX; $x <= $endX; $x++) {
                 $isAlive = $this->cells->contains(new Position($x, $y));
                 $class = $isAlive ? 'cell alive' : 'cell';
-                $url = '?action=stamp&pattern=' . urlencode($this->selectedPattern) . '&x=' . $x . '&y=' . $y;
-
-                // Preserve clocked state in URL
-                if ($this->clocked) {
-                    $url .= '&clocked=1';
-                }
+                $url = $this->buildUrl('stamp', ['pattern' => $this->selectedPattern, 'x' => $x, 'y' => $y]);
 
                 $html .= '<a href="' . htmlspecialchars($url) . '" class="' . $class . '"></a>';
             }
@@ -128,6 +121,21 @@ HTML;
 
         $html .= '</div>';
         return $html;
+    }
+
+    private function buildUrl(string $action, ?array $extra = null): string
+    {
+        $params = ['action' => $action];
+        if ($this->clocked) {
+            $params['clocked'] = '1';
+        }
+        if ($this->selectedPattern !== 'blinker') {
+            $params['pattern'] = $this->selectedPattern;
+        }
+        if ($extra) {
+            $params = array_merge($params, $extra);
+        }
+        return '?' . http_build_query($params);
     }
 
     private function renderPatternSelector(): string
@@ -148,47 +156,21 @@ HTML;
                         htmlspecialchars($pattern) . '</option>';
         }
 
+        $clockedField = $this->clocked ? '<input type="hidden" name="clocked" value="1">' : '';
         return '<form method="get"><select name="pattern">' .
-               $options . '</select><button type="submit">Select Pattern</button></form>';
+               $options . '</select>' .
+               '<input type="hidden" name="action" value="select_pattern">' .
+               $clockedField .
+               '<button type="submit">Select Pattern</button></form>';
     }
 
     private function renderControls(): string
     {
-        $clocked = $this->clocked;
-        $clockAction = $clocked ? 'clock_off' : 'clock_on';
-        $clockText = $clocked ? 'Clock Off' : 'Clock On';
-
-        // Build query string preserving clocked state
-        $stepUrl = $clocked ? '?clocked=1&action=tick' : '?action=tick';
-        $toggleUrl = $clocked ? '?clocked=1&action=toggle_status' : '?action=toggle_status';
-        $clockUrl = $clocked ? '?action=clock_off' : '?action=clock_on';
-
-        return '<a href="' . $stepUrl . '">Step</a>' .
-               '<a href="' . $toggleUrl . '">Toggle Status</a>' .
-               '<a href="' . $clockUrl . '">' . $clockText . '</a>';
-    }
-
-    private function calculateBounds(Cells $cells, int $padding = 10): array
-    {
-        if ($cells->count() === 0) {
-            return [
-                'minX' => -$padding,
-                'maxX' => $padding,
-                'minY' => -$padding,
-                'maxY' => $padding
-            ];
-        }
-
-        $positions = $cells->all();
-        $xs = array_map(fn($p) => $p->x, $positions);
-        $ys = array_map(fn($p) => $p->y, $positions);
-
-        return [
-            'minX' => min($xs) - $padding,
-            'maxX' => max($xs) + $padding,
-            'minY' => min($ys) - $padding,
-            'maxY' => max($ys) + $padding,
-        ];
+        return '<a href="' . $this->buildUrl('step') . '">Step</a>' .
+               '<a href="' . $this->buildUrl('toggle_status') . '">Toggle Status</a>' .
+               '<a href="' . $this->buildUrl($this->clocked ? 'clock_off' : 'clock_on') . '">' .
+               ($this->clocked ? 'Clock Off' : 'Clock On') . '</a>' .
+               '<a href="' . $this->buildUrl('reset') . '">Reset</a>';
     }
 
     private function getCss(): string
@@ -246,15 +228,14 @@ button:hover {
 }
 .grid {
     display: grid;
-    gap: 1px;
+    gap: 0;
     margin: 0 auto;
 }
 .cell {
     display: block;
-    width: 20px;
-    height: 20px;
-    border: 1px solid #eee;
-    transition: opacity 0.1s;
+    width: 10px;
+    height: 10px;
+    border: 0;
 }
 .cell.alive {
     background: #000;

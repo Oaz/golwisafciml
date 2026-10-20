@@ -7,8 +7,8 @@ declare(strict_types=1);
  * This file defines runtime configuration constants.
  */
 
-// Tick interval in seconds (v1 spec: 0.1s)
-const TICK_INTERVAL = 0.1;
+// Tick interval in seconds (updated from 0.1 to 0.5 to fix input race conditions)
+const TICK_INTERVAL = 0.5;
 
 // Patterns directory (relative to WebServerOnly directory)
 const PATTERNS_DIR = __DIR__ . '/patterns';
