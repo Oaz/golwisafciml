@@ -1,0 +1,16 @@
+/vendor/
+/patterns/*.json
+!patterns/.gitkeep
+
+# Session files (if using file-based sessions)
+/sessions/
+
+# IDE/Editor files
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db

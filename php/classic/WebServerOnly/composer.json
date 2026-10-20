@@ -1,0 +1,33 @@
+{
+    "name": "golwisafciml/php-classic-webserveronly",
+    "type": "project",
+    "description": "Imperative shell for Conway's Game of Life (v1) - Web Server Only",
+    "license": "AGPL-3.0",
+    "require": {
+        "php": "^8.1",
+        "golwisafciml/php-classic-core": "@dev"
+    },
+    "autoload": {
+        "psr-4": {
+            "GameOfLife\\Classic\\WebServerOnly\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "GameOfLife\\Classic\\WebServerOnly\\Tests\\": "tests/"
+        }
+    },
+    "minimum-stability": "dev",
+    "config": {
+        "optimize-autoloader": true
+    },
+    "repositories": [
+        {
+            "type": "path",
+            "url": "../core",
+            "options": {
+                "symlink": false
+            }
+        }
+    ]
+}
