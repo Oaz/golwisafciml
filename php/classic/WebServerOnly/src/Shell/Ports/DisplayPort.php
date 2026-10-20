@@ -11,7 +11,7 @@ use GameOfLife\Classic\Core\Position;
  * HTML/CSS Display port for the WebServerOnly shell.
  * Renders cells as a clickable grid of <a> tags in a CSS Grid.
  */
-final class DisplayPort implements Port
+class DisplayPort implements Port
 {
     private Cells $cells;
     private string $status = '';

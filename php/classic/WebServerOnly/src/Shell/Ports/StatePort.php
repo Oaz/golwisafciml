@@ -10,7 +10,7 @@ use GameOfLife\Classic\Core\Core;
  * Session-based State port for the WebServerOnly shell.
  * Manages the mutable Core reference and UI state between HTTP requests.
  */
-final class StatePort implements Port
+class StatePort implements Port
 {
     private const SESSION_KEY_CORE = 'gol_core';
     private const SESSION_KEY_CLOCKED = 'gol_clocked';

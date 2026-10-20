@@ -10,7 +10,7 @@ use GameOfLife\Classic\Core\Position;
  * EventSource port for the WebServerOnly shell.
  * Extracts user actions and parameters from HTTP GET parameters.
  */
-final class EventSourcePort implements Port
+class EventSourcePort implements Port
 {
     private array $get;
 

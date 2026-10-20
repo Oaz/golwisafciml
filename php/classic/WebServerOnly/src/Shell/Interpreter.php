@@ -21,7 +21,7 @@ use GameOfLife\Classic\WebServerOnly\Shell\Ports\StatePort;
  * Implements ProgramVisitor to dispatch on Program types.
  * Executes instructions and manages the mutable Core state.
  */
-final class Interpreter implements ProgramVisitor
+class Interpreter implements ProgramVisitor
 {
     private Core $currentCore;
 

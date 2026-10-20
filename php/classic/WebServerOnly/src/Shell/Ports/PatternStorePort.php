@@ -11,7 +11,7 @@ use GameOfLife\Classic\Core\Position;
  * File-based PatternStore port for the WebServerOnly shell.
  * Stores patterns as JSON files and provides retrieval by name.
  */
-final class PatternStorePort implements Port
+class PatternStorePort implements Port
 {
     private string $patternsDir;
 
