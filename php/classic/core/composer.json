@@ -1,0 +1,25 @@
+{
+    "name": "golwisafciml/php-classic-core",
+    "type": "library",
+    "description": "Functional core for Conway's Game of Life (v1) - Classic Monochrome",
+    "license": "AGPL-3.0",
+    "autoload": {
+        "psr-4": {
+            "GameOfLife\\Classic\\Core\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "GameOfLife\\Classic\\Core\\Tests\\": "tests/"
+        }
+    },
+    "require": {},
+    "require-dev": {
+        "phpunit/phpunit": "^10.0",
+        "phpstan/phpstan": "^1.10"
+    },
+    "minimum-stability": "dev",
+    "config": {
+        "optimize-autoloader": true
+    }
+}

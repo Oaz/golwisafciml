@@ -1,135 +1,155 @@
-# Game of Life Classic Core (v1) - PHP Implementation
+# PHP Classic Core (v1) - Functional Core for Conway's Game of Life
 
-This directory contains the **pure functional core** for Conway's Game of Life, Version 1 (Monochrome) in PHP.
-
-**Status:** Plan written, awaiting approval before implementation (see `plan.md`).
+This is the **functional core** for Conway's Game of Life, Version 1 (Monochrome) implemented in PHP.
 
 ## Overview
 
-This implementation follows the **Functional Core / Imperative Shell** pattern:
-- The **core** (this directory) contains only pure types, pure functions, and the Program type
-- The **shell** (separate directories) contains the interpreter, ports, and environment-specific code
+This core is **pure** - it contains only types, pure functions, and the Program type. It has:
+- **No dependencies on ports**
+- **No interpreter** (belongs in the shell)
+- **No test doubles** (fakes, mocks, spies)
+
+Core tests verify Program structure via the visitor pattern, not via interpretation.
 
 ## Architecture
 
-### Core Components
+### Domain Types
 
-| File | Purpose |
-|------|---------|
-| `src/Position.php` | Position value object with x, y coordinates |
-| `src/Cells.php` | Cells collection (immutable set of Position objects) |
-| `src/Core.php` | Core state (immutable, with cells and statusVisible) |
-| `src/Life.php` | Life rules: neighbors, shouldLive, nextGenerationCells |
-| `src/Pattern.php` | Translation and status message functions |
-| `src/Program.php` | Abstract Program base class |
-| `src/ReturnProgram.php` | Return instruction (terminator) |
-| `src/ShowCellsProgram.php` | ShowCells instruction |
-| `src/DisplayMessageProgram.php` | DisplayMessage instruction |
-| `src/HideMessageProgram.php` | HideMessage instruction |
-| `src/GetPatternCellsProgram.php` | GetPatternCells instruction with continuation |
-| `src/ProgramVisitor.php` | Visitor interface for pattern matching |
-| `src/CoreOperations.php` | Core operations producing Programs |
-| `composer.json` | Composer package configuration (zero dependencies) |
-| `tests/` | Complete test suite using PHPUnit |
+- `Position` - Immutable value object representing a grid coordinate (x, y)
+- `Cells` - Immutable set of Position objects with set semantics
+- `Core` - Immutable state containing `cells` and `statusVisible` flag
 
-## Design Decisions
+### Pure Functions
 
-### Language Requirements
-- **PHP 8.1+** required (for `readonly` properties)
-
-### Data Types
-- **Position:** `final readonly class` with `x: int`, `y: int`
-- **Cells:** Custom immutable collection class (wraps PHP array with set semantics)
-- **Core:** `final readonly class` with `cells: Cells`, `statusVisible: bool`
+- `Life::neighbors()` - Get 8 Moore neighbors of a position
+- `Life::shouldLive()` - Determine if a cell lives based on life rules
+- `Life::nextGenerationCells()` - Compute next generation using candidate-set filtering
+- `Pattern::translate()` - Translate cells by a reference position
+- `Pattern::statusMessage()` - Get status message for cell count
 
 ### Program Type
-- **Class hierarchy** with abstract `Program` base class and concrete instruction subclasses
-- **Visitor pattern** for interpretation (implemented by shell)
-- Each instruction class is `final readonly` for immutability
 
-### Memoization
-- **Static array cache** in `Life` class for `neighbors()` function
-- Observationally pure: same input always returns same output
+The Program type is represented as a class hierarchy:
+- `Program` - Abstract base class
+- `ReturnProgram` - Terminates and commits the core
+- `ShowCellsProgram` - Display cells
+- `DisplayMessageProgram` - Display a message
+- `HideMessageProgram` - Hide the status message
+- `GetPatternCellsProgram` - Fetch pattern cells from store
 
-### Dependencies
-- **Zero runtime dependencies** - pure PHP standard library
-- **Development dependencies:** PHPUnit, PHPStan (via Composer)
+The `ProgramVisitor` interface enables pattern matching for interpretation.
 
-## Implementation Plan
+### Core Operations
 
-See `plan.md` for the complete implementation plan, including:
-- Detailed file layout and responsibilities
-- PHP-specific design decisions
-- Test organization and coverage
-- Deviations from spec and their rationales
-- Evolution considerations for v2
+- `CoreOperations::ret()` - Create Return program
+- `CoreOperations::showCells()` - Create ShowCells program
+- `CoreOperations::displayMessage()` - Create DisplayMessage program
+- `CoreOperations::hideMessage()` - Create HideMessage program
+- `CoreOperations::getPatternCells()` - Create GetPatternCells program
+- `CoreOperations::nextGenerationProgram()` - Build next generation program
+- `CoreOperations::addPatternProgram()` - Build add pattern program
+- `CoreOperations::switchStatusVisibilityProgram()` - Toggle status visibility
 
-## Building
-
-The core is a **Composer library package** with zero dependencies:
+## Installation
 
 ```bash
-# Install development dependencies
+cd php/classic/core
 composer install
-
-# Validate composer.json
-composer validate
 ```
 
-## Testing
+## Running Tests
 
 ```bash
-# Run all tests
 ./vendor/bin/phpunit
-
-# Run with coverage
-./vendor/bin/phpunit --coverage-html coverage
 ```
 
-## Usage
+## PHP Version Requirement
 
-This core is intended to be used by shell implementations. To reference it from a shell:
-
-1. Add to your shell's `composer.json`:
-   ```json
-   {
-     "require": {
-       "golwisafciml/php-classic-core": "@dev"
-     },
-     "repositories": [
-       {
-         "type": "path",
-         "url": "../core"
-       }
-     ]
-   }
-   ```
-
-2. Use the core types in your shell code:
-   ```php
-   use GameOfLife\Classic\Core\Core;
-   use GameOfLife\Classic\Core\CoreOperations;
-   
-   $core = Core::initial();
-   $program = CoreOperations::nextGenerationProgram($core);
-   ```
+PHP 8.1+ is required for:
+- `readonly` properties for immutability
+- Modern type system features
 
 ## Deviations from Spec
 
-See `plan.md` for detailed deviations. Key PHP-specific choices:
+### Immutability
 
-1. **Immutability:** PHP lacks deep immutability; we use `readonly` properties and copy-on-write discipline
-2. **Cells representation:** Custom `Cells` class with set semantics (PHP has no built-in immutable set)
-3. **Program representation:** Class hierarchy with visitor pattern (most idiomatic PHP approach)
-4. **Memoization:** Static array cache (observationally pure, suitable for PHP's single-threaded context)
-5. **Coordinate type:** PHP `int` (platform-dependent range, typically ±2.1 billion or ±9.2 quintillion)
+PHP lacks deep immutability guarantees. We use:
+- `readonly` properties on classes (PHP 8.1+)
+- Copy-on-write discipline (methods return new instances)
+- No caching (avoids mutable state entirely)
 
-## Design for Evolution (v1 → v2)
+The core has **zero mutable state** - no static variables, no global state.
 
-The class hierarchy approach makes v2 evolution straightforward:
+### Cells Representation
+
+`Cells` is implemented as a class wrapping a PHP associative array keyed by position hash. It implements:
+- Set semantics (uniqueness, order-insensitive equality)
+- O(1) lookups via associative array
+- Structural equality via `equals()` method
+
+### Program Representation
+
+We use a **class hierarchy with visitor pattern** instead of algebraic data types:
+- Most idiomatic PHP approach
+- Provides type safety through class types
+- Visitor pattern enables interpretation
+- Easy to test with `instanceof` checks
+
+### Caching
+
+**Deliberate deviation:** We do NOT cache `neighbors()` results.
+
+Rationale:
+- Function is trivial (8 arithmetic operations)
+- For web use with single generation per request, reuse rate is 0%
+- Storage overhead exceeds computation cost
+- In PHP-FPM, stored results would grow unboundedly
+- Function remains observationally pure
+
+### Coordinate Type
+
+Uses PHP `int` type. Range is platform-dependent but comfortably passes G11 test (±1,000,000).
+
+## Test Coverage
+
+### Pure Function Tests (CoreTest.php)
+
+- **C1** - Position construction/accessor round-trip
+- **N1-N3, N5** - Neighbors function correctness and purity
+- **G1** - shouldLive truth table (18 cases)
+- **G2** - Oscillator periods (blinker, toad, beacon)
+- **G3** - Still lifes (block, beehive, loaf, boat, tub)
+- **G4** - Pentadecathlon period 15
+- **G5** - Glider translation
+- **G6** - Two-generation chain
+- **G7** - Extinction patterns
+- **G9** - Purity verification
+- **G11** - Unboundedness (large coordinates)
+- **P1** - statusMessage grammar
+- **P2** - translate offsets
+- **P4** - translate cardinality preservation
+- **X1a** - initialCore defaults
+- **X2** - Non-destructive field updates
+- **X3** - Cardinalities
+- **X4** - Core equality
+
+### Program Structure Tests (ProgramTest.php)
+
+- **I1** - Instruction identity (all 5 opcodes distinguishable)
+- **I2** - nextGenerationProgram shape
+- **I3** - switchStatusVisibilityProgram shape
+- **I4** - addPatternProgram shape
+- **I8** - Program well-formedness (all end with Return)
+- **I9** - Unknown pattern continuation handling
+
+## Evolution to v2
+
+The architecture is designed for easy evolution to v2 (multi-breed):
+- Program class hierarchy extends naturally with new subclasses
 - New instructions add new `Program` subclasses
 - Existing interpreter gains new visit methods
-- Core gains `currentPattern` field and related operations
-- Cells and Position evolve to include breed information
+- No changes to existing Program classes needed
 
-See `plan.md` §6 for detailed evolution considerations.
+## License
+
+AGPL-3.0
