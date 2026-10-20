@@ -16,6 +16,7 @@ final class StatePort implements Port
     private const SESSION_KEY_CLOCKED = 'gol_clocked';
     private const SESSION_KEY_PATTERN = 'gol_selected_pattern';
     private const SESSION_KEY_INITIALIZED = 'gol_initialized';
+    private const SESSION_KEY_STATUS_VISIBLE = 'gol_status_visible';
 
     public function loadCore(): Core
     {
@@ -67,5 +68,25 @@ final class StatePort implements Port
     public function markInitialized(): void
     {
         $_SESSION[self::SESSION_KEY_INITIALIZED] = true;
+    }
+
+    /**
+     * Check if status bar should be visible.
+     *
+     * @return bool True if status bar is visible
+     */
+    public function isStatusVisible(): bool
+    {
+        return $_SESSION[self::SESSION_KEY_STATUS_VISIBLE] ?? false;
+    }
+
+    /**
+     * Set status bar visibility.
+     *
+     * @param bool $visible Whether status bar should be visible
+     */
+    public function setStatusVisible(bool $visible): void
+    {
+        $_SESSION[self::SESSION_KEY_STATUS_VISIBLE] = $visible;
     }
 }

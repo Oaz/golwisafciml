@@ -11,8 +11,8 @@ namespace GameOfLife\Classic\WebServerOnly\Models;
 final readonly class ShellConfig
 {
     public function __construct(
-        public float $tickInterval = 0.5,
-        public string $patternsDir = '',
-        public bool $debug = false
+        public float $tickInterval,
+        public string $patternsDir,
+        public bool $debug
     ) {}
 }

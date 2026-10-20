@@ -48,6 +48,11 @@ final class DisplayPort implements Port
         $this->selectedPattern = $pattern;
     }
 
+    public function setStatusVisible(bool $visible): void
+    {
+        $this->statusVisible = $visible;
+    }
+
     public function getOutput(): string
     {
         return $this->renderHtml();
@@ -61,7 +66,7 @@ final class DisplayPort implements Port
             : '';
 
         $metaRefresh = $this->clocked
-            ? '<meta http-equiv="refresh" content="0.5">'
+            ? '<meta http-equiv="refresh" content="2">'
             : '';
 
         $patternSelector = $this->renderPatternSelector();
@@ -101,11 +106,11 @@ HTML;
 
     private function renderGrid(): string
     {
-        // Fixed viewport: always show x from -80 to 79, y from -35 to 34
-        $startX = -80;
-        $startY = -35;
-        $endX = 79;
-        $endY = 34;
+        // Compute viewport bounds from grid dimensions
+        $startX = -$this->gridWidth / 2;
+        $startY = -$this->gridHeight / 2;
+        $endX = -$startX - 1;
+        $endY = -$startY - 1;
 
         $html = '<div class="grid" style="grid-template-columns: repeat(' . $this->gridWidth . ', ' . $this->cellSize . 'px);">';
 
@@ -183,7 +188,7 @@ body {
     background: #f5f5f5;
 }
 .container {
-    max-width: 1200px;
+    max-width: 1700px;
     margin: 0 auto;
 }
 h1 {

@@ -55,6 +55,7 @@ final class RequestHandler
         $core = $this->state->loadCore();
         $clocked = $this->state->isClocked();
         $selectedPattern = $this->state->getSelectedPattern();
+        $statusVisible = $this->state->isStatusVisible();
 
         // If clocked parameter is in GET, use it (preserves clocked state across form submissions)
         if ($this->eventSource->isClocked()) {
@@ -80,7 +81,7 @@ final class RequestHandler
             $pattern = $this->eventSource->getPatternName() ?? $selectedPattern;
             $this->state->setSelectedPattern($pattern);
             $this->state->saveCore($core);
-            return $this->renderFinalState($core, $clocked, $pattern);
+            return $this->renderFinalState($core, $clocked, $pattern, $statusVisible);
         }
 
         if ($action === 'clock_on') {
@@ -93,7 +94,11 @@ final class RequestHandler
             $core = Core::initial();
             $core = $this->seedDemoScene($core);
             $this->state->saveCore($core);
-            return $this->renderFinalState($core, $clocked, $selectedPattern);
+            return $this->renderFinalState($core, $clocked, $selectedPattern, $statusVisible);
+        } elseif ($action === 'toggle_status') {
+            // Handle toggle_status using session-based UI state (not Core-level)
+            $this->state->setStatusVisible(!$statusVisible);
+            $statusVisible = !$statusVisible;
         }
 
         // 6. Build and interpret program based on action
@@ -107,10 +112,6 @@ final class RequestHandler
             $program = CoreOperations::addPatternProgram($core, $patternName, $reference);
             $this->interpreter->interpret($program);
             $core = $this->state->loadCore();
-        } elseif ($action === 'toggle_status') {
-            $program = CoreOperations::switchStatusVisibilityProgram($core);
-            $this->interpreter->interpret($program);
-            $core = $this->state->loadCore();
         } elseif ($action === 'step') {
             // step is the same as tick
             $program = CoreOperations::nextGenerationProgram($core);
@@ -119,7 +120,7 @@ final class RequestHandler
         }
 
         // 7. Save final core and render
-        return $this->renderFinalState($core, $clocked, $selectedPattern);
+        return $this->renderFinalState($core, $clocked, $selectedPattern, $statusVisible);
     }
 
     /**
@@ -172,9 +173,10 @@ final class RequestHandler
      * @param Core $core The final core state
      * @param bool $clocked Whether clocked mode is active
      * @param string $selectedPattern The selected pattern name
+     * @param bool $statusVisible Whether status bar should be visible
      * @return string Complete HTML page
      */
-    private function renderFinalState(Core $core, bool $clocked, string $selectedPattern): string
+    private function renderFinalState(Core $core, bool $clocked, string $selectedPattern, bool $statusVisible): string
     {
         // Save core to state
         $this->state->saveCore($core);
@@ -182,9 +184,10 @@ final class RequestHandler
         // Configure display
         $this->display->setClocked($clocked);
         $this->display->setSelectedPattern($selectedPattern);
+        $this->display->setStatusVisible($statusVisible);
         $this->display->render($core->cellsOf());
 
-        if ($core->statusVisibleOf()) {
+        if ($statusVisible && $core->cellsOf()->count() > 0) {
             $this->display->show(Pattern::statusMessage($core->cellsOf()));
         } else {
             $this->display->hide();

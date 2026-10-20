@@ -20,7 +20,7 @@ use GameOfLife\Classic\WebServerOnly\Models\ShellConfig;
 
 // Configuration
 $config = new ShellConfig(
-    tickInterval: 0.1,
+    tickInterval: 2.0,
     patternsDir: __DIR__ . '/patterns',
     debug: false
 );
