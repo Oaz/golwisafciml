@@ -66,7 +66,7 @@ final class DisplayPort implements Port
             : '';
 
         $metaRefresh = $this->clocked
-            ? '<meta http-equiv="refresh" content="2">'
+            ? '<meta http-equiv="refresh" content="2;url=' . htmlspecialchars($this->buildCleanUrl()) . '">'
             : '';
 
         $patternSelector = $this->renderPatternSelector();
@@ -139,6 +139,18 @@ HTML;
         }
         if ($extra) {
             $params = array_merge($params, $extra);
+        }
+        return '?' . http_build_query($params);
+    }
+
+    private function buildCleanUrl(): string
+    {
+        $params = [];
+        if ($this->clocked) {
+            $params['clocked'] = '1';
+        }
+        if ($this->selectedPattern !== 'blinker') {
+            $params['pattern'] = $this->selectedPattern;
         }
         return '?' . http_build_query($params);
     }
